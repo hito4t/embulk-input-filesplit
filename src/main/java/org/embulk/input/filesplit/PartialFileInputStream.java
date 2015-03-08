@@ -14,6 +14,8 @@ public class PartialFileInputStream extends InputStream {
 	private long start;
 	private long end;
 	private long current;
+	private Integer next;
+	private boolean lastIsCR;
 	private boolean eof;
 	
 	public PartialFileInputStream(InputStream original, long start, long end) {
@@ -36,7 +38,23 @@ public class PartialFileInputStream extends InputStream {
 			return -1;
 		}
 		
-		int read = original.read(b, off, len);
+		int read;
+		if (next != null) {
+			b[off] = next.byteValue();
+			next = null;
+			read = 1;
+			
+			if (len > 1) {
+				int temp = original.read(b, off + 1, len - 1);
+				if (temp < 0) {
+					eof = true;
+				} else {
+					read += temp;
+				}
+			}
+		} else {
+			read = original.read(b, off, len);
+		}
 		if (read < 0) {
 			eof = true;
 			return -1;
@@ -49,6 +67,16 @@ public class PartialFileInputStream extends InputStream {
 					eof = true;
 					return i + 1;
 				}
+				
+				if (lastIsCR) {
+					eof = true;
+					if (i == 0) {
+						return -1;
+					}
+					return i;
+				}
+				
+				lastIsCR = (b[off + i] == '\r');
 			}
 		}
 		
@@ -63,7 +91,13 @@ public class PartialFileInputStream extends InputStream {
 			return -1;
 		}
 		
-		int read = original.read();
+		int read;
+		if (next != null) {
+			read = next;
+			next = null;
+		} else {
+			read = original.read();
+		}
 		current++;
 		
 		if (read < 0) {
@@ -74,8 +108,15 @@ public class PartialFileInputStream extends InputStream {
 		if (current >= end) {
 			if (read == '\n') {
 				eof = true;
+				
+			} else if (lastIsCR) {
+				eof = true;
+				return -1;
 			}
+			
+			lastIsCR = (read == '\r');
 		}
+		
 		return read;
 	}
 	
@@ -116,12 +157,23 @@ public class PartialFileInputStream extends InputStream {
 			while ((c = original.read()) >= 0) {
 				start++;
 				current++;
+				
 				if (c == '\n') {
 					break;
 				}
+				
+				if (lastIsCR) {
+					start--;
+					current--;
+					next = c;
+					break;
+				} 
+				
+				lastIsCR = (c == '\r');
 			}
 		}
 		
+		lastIsCR = false;
 		if (start >= end) {
 			eof = true;
 		}
