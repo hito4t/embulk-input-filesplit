@@ -44,10 +44,10 @@ public class PartialFileInputStream extends InputStream {
 		
 		current += read;
 		if (current >= end) {
-			for (int i = Math.max((int)(end - current + read), 0); i < len; i++) {
+			for (int i = Math.max((int)(end - current + read), 0); i < read; i++) {
 				if (b[off + i] == '\n') {
 					eof = true;
-					return i;
+					return i + 1;
 				}
 			}
 		}
