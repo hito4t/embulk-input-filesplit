@@ -1,4 +1,4 @@
-package org.embulk.output.filesplit;
+package org.embulk.input.filesplit;
 
 import java.io.File;
 import java.io.FileInputStream;

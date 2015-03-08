@@ -1,7 +1,7 @@
 /*
  * $Id: typical.epf 2627 2010-03-18 01:40:13Z tiba $
  */
-package org.embulk.output.filesplit;
+package org.embulk.input.filesplit;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
