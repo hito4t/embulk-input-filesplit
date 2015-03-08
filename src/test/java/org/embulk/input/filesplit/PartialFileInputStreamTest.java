@@ -80,20 +80,20 @@ public class PartialFileInputStreamTest {
 			assertEquals(-1, in.read(buffer));
 		}
 		
-		try (InputStream in = createInput("12345\n67\n89", 1, 8)) {
+		try (InputStream in = createInput("12345\n67\n89", 1, 7)) {
 			assertEquals('6', in.read());
 			assertEquals('7', in.read());
 			assertEquals('\n', in.read());
 			assertEquals(-1, in.read());
 		}
-		try (InputStream in = createInput("12345\n67\n89", 1, 8)) {
+		try (InputStream in = createInput("12345\n67\n89", 1, 7)) {
 			assertEquals(3, in.read(buffer));
 			assertEquals('6', buffer[0]);
 			assertEquals('7', buffer[1]);
 			assertEquals('\n', buffer[2]);
 		}
 		
-		try (InputStream in = createInput("12345\n67\n89", 1, 11)) {
+		try (InputStream in = createInput("12345\n67\n89", 1, 10)) {
 			assertEquals('6', in.read());
 			assertEquals('7', in.read());
 			assertEquals('\n', in.read());
@@ -101,13 +101,71 @@ public class PartialFileInputStreamTest {
 			assertEquals('9', in.read());
 			assertEquals(-1, in.read());
 		}
-		try (InputStream in = createInput("12345\n67\n89", 1, 11)) {
+		try (InputStream in = createInput("12345\n67\n89", 1, 10)) {
 			assertEquals(5, in.read(buffer));
 			assertEquals('6', buffer[0]);
 			assertEquals('7', buffer[1]);
 			assertEquals('\n', buffer[2]);
 			assertEquals('8', buffer[3]);
 			assertEquals('9', buffer[4]);
+		}
+		
+		try (InputStream in = createInput("12345\n67\n89", 11, 12)) {
+			assertEquals(-1, in.read());
+		}
+		try (InputStream in = createInput("12345\n67\n89", 11, 12)) {
+			assertEquals(-1, in.read(buffer));
+		}
+		
+		// \nの直後まで
+		try (InputStream in = createInput("12345\n67\n89", 4, 9)) {
+			assertEquals('6', in.read());
+			assertEquals('7', in.read());
+			assertEquals('\n', in.read());
+			assertEquals(-1, in.read());
+		}
+		try (InputStream in = createInput("12345\n67\n89", 4, 9)) {
+			assertEquals(3, in.read(buffer));
+			assertEquals('6', buffer[0]);
+			assertEquals('7', buffer[1]);
+			assertEquals('\n', buffer[2]);
+		}
+		// \nの直後から
+		try (InputStream in = createInput("12345\n67\n89", 9, 11)) {
+			assertEquals('8', in.read());
+			assertEquals('9', in.read());
+			assertEquals(-1, in.read());
+		}
+		try (InputStream in = createInput("12345\n67\n89", 9, 11)) {
+			assertEquals(2, in.read(buffer));
+			assertEquals('8', buffer[0]);
+			assertEquals('9', buffer[1]);
+		}
+		
+		// \nの直前まで
+		try (InputStream in = createInput("12345\n67\n89", 4, 8)) {
+			assertEquals('6', in.read());
+			assertEquals('7', in.read());
+			assertEquals('\n', in.read());
+			assertEquals(-1, in.read());
+		}
+		try (InputStream in = createInput("12345\n67\n89", 4, 9)) {
+			assertEquals(3, in.read(buffer));
+			assertEquals('6', buffer[0]);
+			assertEquals('7', buffer[1]);
+			assertEquals('\n', buffer[2]);
+		}
+		
+		// \nの直前から
+		try (InputStream in = createInput("12345\n67\n89", 9, 11)) {
+			assertEquals('8', in.read());
+			assertEquals('9', in.read());
+			assertEquals(-1, in.read());
+		}
+		try (InputStream in = createInput("12345\n67\n89", 9, 11)) {
+			assertEquals(2, in.read(buffer));
+			assertEquals('8', buffer[0]);
+			assertEquals('9', buffer[1]);
 		}
 	}
 	

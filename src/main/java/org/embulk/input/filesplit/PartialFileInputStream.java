@@ -44,7 +44,7 @@ public class PartialFileInputStream extends InputStream {
 		
 		current += read;
 		if (current >= end) {
-			for (int i = Math.max((int)(end - current + read), 0); i < read; i++) {
+			for (int i = Math.max((int)(end - 1 - current + read), 0); i < read; i++) {
 				if (b[off + i] == '\n') {
 					eof = true;
 					return i + 1;
@@ -107,7 +107,7 @@ public class PartialFileInputStream extends InputStream {
 		if (start == 0) {
 			current = 0;
 		} else {
-			current = original.skip(start);
+			current = original.skip(--start);
 			if (current != start) {
 				throw new IOException("Cannot skip.");
 			}
