@@ -20,9 +20,15 @@ public class LocalFileSplitInputPluginTest {
 	private EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "filesplit", LocalFileSplitInputPlugin.class);
 	
 	@Test
-	public void test1() throws Exception
+	public void test() throws Exception
 	{
-		run("/yml/test1.yml", "/data/test1.csv");
+		run("/yml/test.yml", "/data/test.csv");
+	}
+	
+	@Test
+	public void testTasks() throws Exception
+	{
+		run("/yml/test-tasks.yml", "/data/test.csv");
 	}
 	
 	private void run(String ymlPath, String expectedName) throws Exception

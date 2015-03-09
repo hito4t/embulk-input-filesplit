@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
+import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigInject;
 import org.embulk.config.ConfigSource;
@@ -21,6 +21,8 @@ import org.embulk.spi.FileInputPlugin;
 import org.embulk.spi.TransactionalFileInput;
 import org.embulk.spi.util.InputStreamFileInput;
 
+import com.google.common.base.Optional;
+
 
 public class LocalFileSplitInputPlugin
         implements FileInputPlugin
@@ -30,6 +32,10 @@ public class LocalFileSplitInputPlugin
     {
         @Config("path")
         public String getPath();
+        
+        @Config("tasks")
+        @ConfigDefault("null")
+        public Optional<Integer> getTasks();
 
         public List<PartialFile> getFiles();
         public void setFiles(List<PartialFile> files);
@@ -43,12 +49,21 @@ public class LocalFileSplitInputPlugin
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
+        int tasks;
+        if (task.getTasks().isPresent()) {
+        	tasks = task.getTasks().get();
+        	if (tasks <= 0) {
+        		throw new IllegalArgumentException(String.format("'tasks' is %d but must be greater than 0", tasks));
+        	}
+        } else {
+        	tasks = Runtime.getRuntime().availableProcessors() * 2;
+        }
+
         long size = new File(task.getPath()).length();
-        int division = Runtime.getRuntime().availableProcessors() * 2;
         List<PartialFile> files = new ArrayList<PartialFile>();
-        for (int i = 0; i < division; i++) {
-        	long start = BigInteger.valueOf(size).multiply(BigInteger.valueOf(i)).divide(BigInteger.valueOf(division)).longValue();
-        	long end = BigInteger.valueOf(size).multiply(BigInteger.valueOf(i + 1)).divide(BigInteger.valueOf(division)).longValue();
+        for (int i = 0; i < tasks; i++) {
+        	long start = size * i / tasks;
+        	long end = size * (i + 1) / tasks;
         	if (start < end) {
         		files.add(new PartialFile(task.getPath(), start, end));
         	}
@@ -56,8 +71,7 @@ public class LocalFileSplitInputPlugin
         
         task.setFiles(files);
 
-        int taskCount = task.getFiles().size();
-        return resume(task.dump(), taskCount, control);
+        return resume(task.dump(), task.getFiles().size(), control);
     }
 
     @Override

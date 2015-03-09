@@ -1,6 +1,6 @@
 in:
   type: filesplit
-  path: 'data/test1.csv'
+  path: 'data/test.csv'
   parser:
     charset: UTF-8
     newline: CRLF
