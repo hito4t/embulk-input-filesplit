@@ -41,7 +41,7 @@ public class LocalFileSplitInputPluginTest {
 	
 	private File prepare() throws URISyntaxException
 	{
-		File file = new File(new File(getClass().getResource("/").toURI()), "temp");
+		File file = new File(new File(getClass().getResource("/resource.txt").toURI()).getParentFile(), "temp");
 		file.mkdir();
 		for (File child : file.listFiles()) {
 			child.delete();

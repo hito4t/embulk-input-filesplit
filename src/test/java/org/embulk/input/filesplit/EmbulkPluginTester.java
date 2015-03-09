@@ -62,7 +62,7 @@ public class EmbulkPluginTester {
 
 	private File convert(String yml) {
 		try {
-			File rootPath = new File(EmbulkPluginTester.class.getResource("/").toURI());
+			File rootPath = new File(EmbulkPluginTester.class.getResource("/resource.txt").toURI()).getParentFile();
 			File ymlPath = new File(EmbulkPluginTester.class.getResource(yml).toURI());
 			File tempYmlPath = new File(ymlPath.getParentFile(), "temp-" + ymlPath.getName());
 			Pattern pathPrefixPattern = Pattern.compile("^ *path(_prefix)?: '(.*)'$");
