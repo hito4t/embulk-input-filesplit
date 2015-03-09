@@ -25,54 +25,7 @@ import org.embulk.spi.util.InputStreamFileInput;
 public class LocalFileSplitInputPlugin
         implements FileInputPlugin
 {
-	public static class PartialFile {
-		private String path;
-		private long start;
-		private long end;
-
-		
-		public PartialFile(String path, long start, long end) {
-			this.path = path;
-			this.start = start;
-			this.end = end;
-		}
-
-		public PartialFile() {
-		}
-		
-		public String getPath() {
-			return path;
-		}
-
-
-		public void setPath(String path) {
-			this.path = path;
-		}
-
-
-		public long getStart() {
-			return start;
-		}
-
-
-		public void setStart(long start) {
-			this.start = start;
-		}
-
-
-		public long getEnd() {
-			return end;
-		}
-
-
-		public void setEnd(long end) {
-			this.end = end;
-		}
-	}
-	
-	
-	
-    public interface PluginTask
+	public interface PluginTask
             extends Task
     {
         @Config("path")

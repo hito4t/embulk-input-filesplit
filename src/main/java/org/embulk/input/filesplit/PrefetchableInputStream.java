@@ -5,16 +5,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class PrefetchableInputStream extends InputStream {
-	
+public class PrefetchableInputStream extends InputStream 
+{
 	private final InputStream original;
 	private Integer next;
 	
-	public PrefetchableInputStream(InputStream original) {
+	public PrefetchableInputStream(InputStream original)
+	{
 		this.original = new BufferedInputStream(original);
 	}
 	
-	public int prefetch() throws IOException {
+	public int prefetch() throws IOException
+	{
 		if (next == null) {
 			next = original.read();
 		}
@@ -22,12 +24,14 @@ public class PrefetchableInputStream extends InputStream {
 	}
 	
 	@Override
-	public int read(byte[] b) throws IOException {
+	public int read(byte[] b) throws IOException
+	{
 		return read(b, 0, b.length);
 	}
 	
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
+	public int read(byte[] b, int off, int len) throws IOException 
+	{
 		if (next == null) {
 			return original.read(b, off, len);
 		}
@@ -50,7 +54,8 @@ public class PrefetchableInputStream extends InputStream {
 	}
 
 	@Override
-	public int read() throws IOException {
+	public int read() throws IOException 
+	{
 		if (next == null) {
 			return original.read();
 		}
@@ -61,7 +66,8 @@ public class PrefetchableInputStream extends InputStream {
 	}
 	
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(long n) throws IOException 
+	{
 		if (next == null) {
 			return original.skip(n);
 		}
@@ -71,12 +77,14 @@ public class PrefetchableInputStream extends InputStream {
 	}
 	
 	@Override
-	public int available() throws IOException {
+	public int available() throws IOException 
+	{
 		return 0;
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void close() throws IOException 
+	{
 		original.close();
 	}
 

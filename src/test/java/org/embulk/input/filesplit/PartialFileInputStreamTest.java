@@ -9,11 +9,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class PartialFileInputStreamTest {
+public class PartialFileInputStreamTest 
+{
 	private byte[] buffer = new byte[8];
 	
 	@Test
-	public void testEmpty() throws IOException {
+	public void testEmpty() throws IOException
+	{
 		try (InputStream in = createInput("", 0, 0)) {
 			assertEquals(-1, in.read());
 		}
@@ -23,7 +25,8 @@ public class PartialFileInputStreamTest {
 	}
 	
 	@Test
-	public void testNoLineBreak() throws IOException {
+	public void testNoLineBreak() throws IOException 
+	{
 		try (InputStream in = createInput("12345", 0, 4)) {
 			assertEquals('1', in.read());
 			assertEquals('2', in.read());
@@ -50,7 +53,8 @@ public class PartialFileInputStreamTest {
 	}
 	
 	@Test
-	public void testLF() throws IOException {
+	public void testLF() throws IOException 
+	{
 		try (InputStream in = createInput("12345\n67\n89", 0, 4)) {
 			assertEquals('1', in.read());
 			assertEquals('2', in.read());
@@ -204,7 +208,8 @@ public class PartialFileInputStreamTest {
 	
 	
 	@Test
-	public void testCRLF() throws IOException {
+	public void testCRLF() throws IOException 
+	{
 		try (InputStream in = createInput("12345\r\n67\r\n89", 0, 4)) {
 			assertEquals('1', in.read());
 			assertEquals('2', in.read());
@@ -400,7 +405,8 @@ public class PartialFileInputStreamTest {
 	}
 	
 	@Test
-	public void testCR() throws IOException {
+	public void testCR() throws IOException
+	{
 		try (InputStream in = createInput("12345\r67\r89", 0, 4)) {
 			assertEquals('1', in.read());
 			assertEquals('2', in.read());
@@ -552,7 +558,8 @@ public class PartialFileInputStreamTest {
 		}
 	}
 
-	private InputStream createInput(String s, int start, int end) {
+	private InputStream createInput(String s, int start, int end)
+	{
 		try {
 			return new PartialFileInputStream(new ByteArrayInputStream(s.getBytes("UTF-8")), start, end);
 		} catch (UnsupportedEncodingException e) {

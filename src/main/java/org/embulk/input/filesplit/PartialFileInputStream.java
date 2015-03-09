@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class PartialFileInputStream extends InputStream {
-	
+public class PartialFileInputStream extends InputStream
+{
 	private final PrefetchableInputStream original;
 	private long start;
 	private long end;
 	private long current;
 	private boolean eof;
 	
-	public PartialFileInputStream(InputStream original, long start, long end) {
+	public PartialFileInputStream(InputStream original, long start, long end)
+	{
 		this.original = new PrefetchableInputStream(original);
 		this.start = start;
 		this.end = end;
@@ -20,12 +21,14 @@ public class PartialFileInputStream extends InputStream {
 	}
 	
 	@Override
-	public int read(byte[] b) throws IOException {
+	public int read(byte[] b) throws IOException
+	{
 		return read(b, 0, b.length);
 	}
 	
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
+	public int read(byte[] b, int off, int len) throws IOException 
+	{
 		initializeIfNeeded();
 
 		if (eof) {
@@ -60,7 +63,8 @@ public class PartialFileInputStream extends InputStream {
 	}
 
 	@Override
-	public int read() throws IOException {
+	public int read() throws IOException 
+	{
 		initializeIfNeeded();
 
 		if (eof) {
@@ -85,7 +89,8 @@ public class PartialFileInputStream extends InputStream {
 	}
 	
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(long n) throws IOException
+	{
 		throw new IOException("Skip not supported.");
 		/*
 		long skip = original.skip(n);
@@ -95,16 +100,19 @@ public class PartialFileInputStream extends InputStream {
 	}
 	
 	@Override
-	public int available() throws IOException {
+	public int available() throws IOException 
+	{
 		return 0;
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void close() throws IOException 
+	{
 		original.close();
 	}
 	
-	private void initializeIfNeeded() throws IOException {
+	private void initializeIfNeeded() throws IOException 
+	{
 		if (current >= start) {
 			return;
 			

@@ -8,11 +8,13 @@ import java.io.UnsupportedEncodingException;
 
 import org.junit.Test;
 
-public class PrefetchableInputStreamTest {
+public class PrefetchableInputStreamTest 
+{
 	private byte[] buffer = new byte[8];
 	
 	@Test
-	public void testRead() throws IOException {
+	public void testRead() throws IOException
+	{
 		try (PrefetchableInputStream in = createInput("")) {
 			assertEquals(-1, in.prefetch());
 			assertEquals(-1, in.prefetch());
@@ -34,7 +36,8 @@ public class PrefetchableInputStreamTest {
 	}
 	
 	@Test
-	public void testSkip() throws IOException {
+	public void testSkip() throws IOException 
+	{
 		try (PrefetchableInputStream in = createInput("123")) {
 			assertEquals(2, in.skip(2));
 			assertEquals('3', in.read());
@@ -57,7 +60,8 @@ public class PrefetchableInputStreamTest {
 	}
 	
 	@Test
-	public void testReadBytes() throws IOException {
+	public void testReadBytes() throws IOException
+	{
 		try (PrefetchableInputStream in = createInput("123")) {
 			assertEquals(3, in.read(buffer));
 			assertEquals('1', buffer[0]);
@@ -89,7 +93,8 @@ public class PrefetchableInputStreamTest {
 		}
 	}
 
-	private PrefetchableInputStream createInput(String s) {
+	private PrefetchableInputStream createInput(String s) 
+	{
 		try {
 			return new PrefetchableInputStream(new ByteArrayInputStream(s.getBytes("UTF-8")));
 		} catch (UnsupportedEncodingException e) {
