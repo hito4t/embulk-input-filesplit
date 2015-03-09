@@ -65,7 +65,7 @@ public class EmbulkPluginTester {
 			File rootPath = new File(EmbulkPluginTester.class.getResource("/").toURI());
 			File ymlPath = new File(EmbulkPluginTester.class.getResource(yml).toURI());
 			File tempYmlPath = new File(ymlPath.getParentFile(), "temp-" + ymlPath.getName());
-			Pattern pathPrefixPattern = Pattern.compile("^  path(_prefix)?: '(.*)'$");
+			Pattern pathPrefixPattern = Pattern.compile("^ *path(_prefix)?: '(.*)'$");
 			try (BufferedReader reader = new BufferedReader(new FileReader(ymlPath))) {
 				try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempYmlPath))) {
 					String line;

@@ -11,5 +11,13 @@ in:
     - {name: id, type: long}
     - {name: name, type: string}
     - {name: value, type: long}
-out: 
-    type: stdout
+out:
+  type: file
+  path_prefix: 'temp/result'
+  file_ext: .csv
+  formatter:
+    type: csv
+    delimiter: ';'
+    header_line: false
+    charset: UTF-8
+    newline: CRLF
