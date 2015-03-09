@@ -1,12 +1,14 @@
 package org.embulk.input.filesplit;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 
 
 public class PartialFileInputStream extends InputStream
 {
-	private final PrefetchableInputStream original;
+	private final PushbackInputStream original;
 	private long start;
 	private long end;
 	private long current;
@@ -14,7 +16,7 @@ public class PartialFileInputStream extends InputStream
 	
 	public PartialFileInputStream(InputStream original, long start, long end)
 	{
-		this.original = new PrefetchableInputStream(original);
+		this.original = new PushbackInputStream(new BufferedInputStream(original));
 		this.start = start;
 		this.end = end;
 		current = -1;
@@ -50,7 +52,7 @@ public class PartialFileInputStream extends InputStream
 				}
 				
 				if (b[off + i] == '\r') {
-					int next = (i < read ? b[off + i + 1] : original.prefetch());
+					int next = (i < read ? b[off + i + 1] : prefetch());
 					if (next != '\n') {
 						eof = true;
 						return i + 1;
@@ -80,7 +82,7 @@ public class PartialFileInputStream extends InputStream
 		}
 		
 		if (current >= end) {
-			if (read == '\n' || read == '\r' && original.prefetch() != '\n') {
+			if (read == '\n' || read == '\r' && prefetch() != '\n') {
 				eof = true;
 			}
 		}
@@ -130,7 +132,7 @@ public class PartialFileInputStream extends InputStream
 				start++;
 				current++;
 				
-				if (c == '\n' || c == '\r' && original.prefetch() != '\n') {
+				if (c == '\n' || c == '\r' && prefetch() != '\n') {
 					break;
 				}
 			}
@@ -139,5 +141,14 @@ public class PartialFileInputStream extends InputStream
 		if (start >= end) {
 			eof = true;
 		}
+	}
+	
+	private int prefetch() throws IOException 
+	{
+		int c = original.read();
+		if (c >= 0) {
+			original.unread(c);
+		}
+		return c;
 	}
 }
