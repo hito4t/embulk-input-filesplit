@@ -1,25 +1,19 @@
-/*
- * $Id: typical.epf 2627 2010-03-18 01:40:13Z tiba $
- */
 package org.embulk.input.filesplit;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 
 public class PartialFileInputStream extends InputStream {
 	
-	private final InputStream original;
+	private final PrefetchableInputStream original;
 	private long start;
 	private long end;
 	private long current;
-	private Integer next;
-	private boolean lastIsCR;
 	private boolean eof;
 	
 	public PartialFileInputStream(InputStream original, long start, long end) {
-		this.original = new BufferedInputStream(original);
+		this.original = new PrefetchableInputStream(original);
 		this.start = start;
 		this.end = end;
 		current = -1;
@@ -38,23 +32,7 @@ public class PartialFileInputStream extends InputStream {
 			return -1;
 		}
 		
-		int read;
-		if (next != null) {
-			b[off] = next.byteValue();
-			next = null;
-			read = 1;
-			
-			if (len > 1) {
-				int temp = original.read(b, off + 1, len - 1);
-				if (temp < 0) {
-					eof = true;
-				} else {
-					read += temp;
-				}
-			}
-		} else {
-			read = original.read(b, off, len);
-		}
+		int read = original.read(b, off, len);
 		if (read < 0) {
 			eof = true;
 			return -1;
@@ -68,15 +46,13 @@ public class PartialFileInputStream extends InputStream {
 					return i + 1;
 				}
 				
-				if (lastIsCR) {
-					eof = true;
-					if (i == 0) {
-						return -1;
+				if (b[off + i] == '\r') {
+					int next = (i < read ? b[off + i + 1] : original.prefetch());
+					if (next != '\n') {
+						eof = true;
+						return i + 1;
 					}
-					return i;
 				}
-				
-				lastIsCR = (b[off + i] == '\r');
 			}
 		}
 		
@@ -91,13 +67,7 @@ public class PartialFileInputStream extends InputStream {
 			return -1;
 		}
 		
-		int read;
-		if (next != null) {
-			read = next;
-			next = null;
-		} else {
-			read = original.read();
-		}
+		int read = original.read();
 		current++;
 		
 		if (read < 0) {
@@ -106,15 +76,9 @@ public class PartialFileInputStream extends InputStream {
 		}
 		
 		if (current >= end) {
-			if (read == '\n') {
+			if (read == '\n' || read == '\r' && original.prefetch() != '\n') {
 				eof = true;
-				
-			} else if (lastIsCR) {
-				eof = true;
-				return -1;
 			}
-			
-			lastIsCR = (read == '\r');
 		}
 		
 		return read;
@@ -158,22 +122,12 @@ public class PartialFileInputStream extends InputStream {
 				start++;
 				current++;
 				
-				if (c == '\n') {
+				if (c == '\n' || c == '\r' && original.prefetch() != '\n') {
 					break;
 				}
-				
-				if (lastIsCR) {
-					start--;
-					current--;
-					next = c;
-					break;
-				} 
-				
-				lastIsCR = (c == '\r');
 			}
 		}
 		
-		lastIsCR = false;
 		if (start >= end) {
 			eof = true;
 		}
