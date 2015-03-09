@@ -1,0 +1,15 @@
+in:
+  type: filesplit
+  path: 'data/test1.csv'
+  parser:
+    charset: UTF-8
+    newline: CRLF
+    type: csv
+    delimiter: ','
+    quote: ''
+    columns:
+    - {name: id, type: long}
+    - {name: name, type: string}
+    - {name: value, type: long}
+out: 
+    type: stdout
