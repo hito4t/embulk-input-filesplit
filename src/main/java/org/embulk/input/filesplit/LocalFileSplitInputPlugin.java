@@ -1,9 +1,16 @@
 package org.embulk.input.filesplit;
 
+import java.awt.HeadlessException;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +43,10 @@ public class LocalFileSplitInputPlugin
         @Config("tasks")
         @ConfigDefault("null")
         public Optional<Integer> getTasks();
+        
+        @Config("header_line")
+        @ConfigDefault("false")
+        public boolean getHeaderLine();
 
         public List<PartialFile> getFiles();
         public void setFiles(List<PartialFile> files);
@@ -101,15 +112,17 @@ public class LocalFileSplitInputPlugin
             extends InputStreamFileInput
             implements TransactionalFileInput
     {
-        private static class FileSplitProvider
+        public static class FileSplitProvider
                 implements InputStreamFileInput.Provider
         {
             private final PartialFile file;
+            private final boolean hasHeader;
             private boolean opened = false;
 
-            public FileSplitProvider(PartialFile file)
+            public FileSplitProvider(PartialFile file, boolean hasHeader)
             {
                 this.file = file;
+                this.hasHeader = hasHeader;
             }
 
             @Override
@@ -119,16 +132,34 @@ public class LocalFileSplitInputPlugin
                     return null;
                 }
                 opened = true;
-                return new PartialFileInputStream(new FileInputStream(file.getPath()), file.getStart(), file.getEnd());
+                
+                InputStream in = new PartialFileInputStream(new FileInputStream(file.getPath()), file.getStart(), file.getEnd());
+                if (file.getStart() > 0 && hasHeader) {
+                	byte[] headerBytes = readHeader(new File(file.getPath()));
+                	in = new SequenceInputStream(new ByteArrayInputStream(headerBytes), in);
+                }
+                return in;
             }
 
             @Override
             public void close() { }
+            
+            private byte[] readHeader(File file) throws IOException
+            {
+            	String encoding = "ISO-8859-1";
+            	try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding))) {
+            		String line = reader.readLine();
+            		if (line == null) {
+            			return new byte[]{};
+            		}
+            		return (line + "\n").getBytes(encoding);
+            	}
+            }
         }
 
         public LocalFileSplitInput(PluginTask task, int taskIndex)
         {
-            super(task.getBufferAllocator(), new FileSplitProvider(task.getFiles().get(taskIndex)));
+            super(task.getBufferAllocator(), new FileSplitProvider(task.getFiles().get(taskIndex), task.getHeaderLine()));
         }
 
         @Override
