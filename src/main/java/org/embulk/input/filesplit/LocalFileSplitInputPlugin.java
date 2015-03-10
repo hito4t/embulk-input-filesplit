@@ -1,16 +1,13 @@
 package org.embulk.input.filesplit;
 
-import java.awt.HeadlessException;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,8 +132,7 @@ public class LocalFileSplitInputPlugin
                 
                 InputStream in = new PartialFileInputStream(new FileInputStream(file.getPath()), file.getStart(), file.getEnd());
                 if (file.getStart() > 0 && hasHeader) {
-                	byte[] headerBytes = readHeader(new File(file.getPath()));
-                	in = new SequenceInputStream(new ByteArrayInputStream(headerBytes), in);
+                	in = new SequenceInputStream(openHeader(file.getPath()), in);
                 }
                 return in;
             }
@@ -144,16 +140,33 @@ public class LocalFileSplitInputPlugin
             @Override
             public void close() { }
             
-            private byte[] readHeader(File file) throws IOException
+            private InputStream openHeader(String path) throws IOException
             {
-            	String encoding = "ISO-8859-1";
-            	try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding))) {
-            		String line = reader.readLine();
-            		if (line == null) {
-            			return new byte[]{};
+            	ByteArrayOutputStream header = new ByteArrayOutputStream();
+            	try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(path))) {
+            		while (true) {
+            			int c = in.read();
+            			if (c < 0) {
+            				break;
+            			}
+            			
+        				header.write(c);
+        				
+            			if (c == '\n') {
+            				break;
+            			}
+            			
+            			if (c == '\r') {
+            				int c2 = in.read();
+            				if (c2 == '\n') {
+            					header.write(c2);
+            				}
+            				break;
+            			}
             		}
-            		return (line + "\n").getBytes(encoding);
             	}
+            	header.close();
+            	return new ByteArrayInputStream(header.toByteArray());
             }
         }
 
