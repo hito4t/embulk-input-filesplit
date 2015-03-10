@@ -48,6 +48,7 @@ Gem::Specification.new do |spec|
   spec.name          = "${project.name}"
   spec.version       = "${project.version}"
   spec.authors       = ["Hitoshi Tanaka"]
+  spec.homepage      = "https://github.com/hito4t/embulk-input-filesplit"
   spec.summary       = "Embulk plugin for splitting input file"
   spec.licenses      = ["Apache 2.0"]
   spec.files         = `git ls-files`.split("\n").grep(%r"^(?!\.)").grep(%r"^(?!depends/)") + Dir["classpath/*.jar"]
