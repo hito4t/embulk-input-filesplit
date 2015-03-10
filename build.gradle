@@ -10,7 +10,7 @@ apply plugin: 'com.github.jruby-gradle.base'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-project.version = '0.1.0'
+project.version = '0.1.1'
 
 repositories {
     mavenCentral()
@@ -58,3 +58,7 @@ end
 /$)
 }
 
+
+task gempush << {
+    "gem push pkg/embulk-input-filesplit-${project.version}.gem".execute().waitFor()
+}
