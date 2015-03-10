@@ -37,6 +37,12 @@ public class LocalFileSplitInputPluginTest {
 		run("/yml/test-header.yml", "/data/test.csv");
 	}
 	
+	@Test
+	public void testOnlyHeader() throws Exception
+	{
+		run("/yml/test-only-header.yml", "/data/empty.csv");
+	}
+	
 	private void run(String ymlPath, String expectedName) throws Exception
 	{
 		List<String> expected = readAll(expectedName);
