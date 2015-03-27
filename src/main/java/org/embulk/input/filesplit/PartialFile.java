@@ -1,16 +1,13 @@
-/*
- * $Id: typical.epf 2627 2010-03-18 01:40:13Z tiba $
- */
 package org.embulk.input.filesplit;
 
-public class PartialFile 
+public class PartialFile
 {
 	private String path;
 	private long start;
 	private long end;
 
-	
-	public PartialFile(String path, long start, long end) 
+
+	public PartialFile(String path, long start, long end)
 	{
 		this.path = path;
 		this.start = start;
@@ -19,8 +16,8 @@ public class PartialFile
 
 	public PartialFile() {
 	}
-	
-	public String getPath() 
+
+	public String getPath()
 	{
 		return path;
 	}
@@ -31,7 +28,7 @@ public class PartialFile
 	}
 
 
-	public long getStart() 
+	public long getStart()
 	{
 		return start;
 	}
@@ -41,7 +38,7 @@ public class PartialFile
 		this.start = start;
 	}
 
-	public long getEnd() 
+	public long getEnd()
 	{
 		return end;
 	}
