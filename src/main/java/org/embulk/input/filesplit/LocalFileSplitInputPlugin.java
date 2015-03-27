@@ -31,7 +31,7 @@ import com.google.common.base.Optional;
 public class LocalFileSplitInputPlugin
         implements FileInputPlugin
 {
-	public interface PluginTask
+    public interface PluginTask
             extends Task
     {
         @Config("path")
@@ -59,22 +59,22 @@ public class LocalFileSplitInputPlugin
 
         int tasks;
         if (task.getTasks().isPresent()) {
-        	tasks = task.getTasks().get();
-        	if (tasks <= 0) {
-        		throw new IllegalArgumentException(String.format("'tasks' is %d but must be greater than 0", tasks));
-        	}
+            tasks = task.getTasks().get();
+            if (tasks <= 0) {
+                throw new IllegalArgumentException(String.format("'tasks' is %d but must be greater than 0", tasks));
+            }
         } else {
-        	tasks = Runtime.getRuntime().availableProcessors() * 2;
+            tasks = Runtime.getRuntime().availableProcessors() * 2;
         }
 
         long size = new File(task.getPath()).length();
         List<PartialFile> files = new ArrayList<PartialFile>();
         for (int i = 0; i < tasks; i++) {
-        	long start = size * i / tasks;
-        	long end = size * (i + 1) / tasks;
-        	if (start < end) {
-        		files.add(new PartialFile(task.getPath(), start, end));
-        	}
+            long start = size * i / tasks;
+            long end = size * (i + 1) / tasks;
+            if (start < end) {
+                files.add(new PartialFile(task.getPath(), start, end));
+            }
         }
         
         task.setFiles(files);
@@ -132,7 +132,7 @@ public class LocalFileSplitInputPlugin
                 
                 InputStream in = new PartialFileInputStream(new FileInputStream(file.getPath()), file.getStart(), file.getEnd());
                 if (file.getStart() > 0 && hasHeader) {
-                	in = new SequenceInputStream(openHeader(file.getPath()), in);
+                    in = new SequenceInputStream(openHeader(file.getPath()), in);
                 }
                 return in;
             }
@@ -142,31 +142,31 @@ public class LocalFileSplitInputPlugin
             
             private InputStream openHeader(String path) throws IOException
             {
-            	ByteArrayOutputStream header = new ByteArrayOutputStream();
-            	try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(path))) {
-            		while (true) {
-            			int c = in.read();
-            			if (c < 0) {
-            				break;
-            			}
-            			
-        				header.write(c);
-        				
-            			if (c == '\n') {
-            				break;
-            			}
-            			
-            			if (c == '\r') {
-            				int c2 = in.read();
-            				if (c2 == '\n') {
-            					header.write(c2);
-            				}
-            				break;
-            			}
-            		}
-            	}
-            	header.close();
-            	return new ByteArrayInputStream(header.toByteArray());
+                ByteArrayOutputStream header = new ByteArrayOutputStream();
+                try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(path))) {
+                    while (true) {
+                        int c = in.read();
+                        if (c < 0) {
+                            break;
+                        }
+                        
+                        header.write(c);
+                        
+                        if (c == '\n') {
+                            break;
+                        }
+                        
+                        if (c == '\r') {
+                            int c2 = in.read();
+                            if (c2 == '\n') {
+                                header.write(c2);
+                            }
+                            break;
+                        }
+                    }
+                }
+                header.close();
+                return new ByteArrayInputStream(header.toByteArray());
             }
         }
 
