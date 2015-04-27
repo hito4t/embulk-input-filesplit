@@ -1,6 +1,3 @@
-/*
- * $Id: typical.epf 2627 2010-03-18 01:40:13Z tiba $
- */
 package org.embulk.input.filesplit;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +13,7 @@ import org.embulk.input.filesplit.LocalFileSplitInputPlugin.LocalFileSplitInput.
 import org.junit.Test;
 
 public class LocalFileSplitInputTest {
-	
+
 	@Test
 	public void testHeader() throws Exception
 	{
@@ -35,27 +32,27 @@ public class LocalFileSplitInputTest {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
-		
+
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(open("/data/test-header.csv", 1, 20)))) {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals("1,aaaaa,12345", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
-		
+
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(open("/data/test-header.csv", 1, 40)))) {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals("1,aaaaa,12345", reader.readLine());
 			assertEquals("2,bbb,67890", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
-		
+
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(open("/data/test-header.csv", 20, 40)))) {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals("2,bbb,67890", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
 	}
-	
+
 	@Test
 	public void testOnlyHeader() throws Exception
 	{
@@ -63,19 +60,19 @@ public class LocalFileSplitInputTest {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
-		
+
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(open("/data/test-only-header.csv", 1, 10)))) {
 			assertEquals("id,name,value", reader.readLine());
 			assertEquals(null, reader.readLine());
 		}
 	}
-	
-	private InputStream open(String name, int start, int end) throws IOException, URISyntaxException 
+
+	private InputStream open(String name, int start, int end) throws IOException, URISyntaxException
 	{
 		File path = new File(getClass().getResource(name).toURI());
 		try (FileSplitProvider provider = new FileSplitProvider(new PartialFile(path.getAbsolutePath(), start, end), true)) {
 			return provider.openNext();
 		}
 	}
-	
+
 }

@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 
 public class LocalFileSplitInputPluginTest {
 
-	private EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "filesplit", LocalFileSplitInputPlugin.class);
+	private static EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "filesplit", LocalFileSplitInputPlugin.class);
 
 	@Test
 	public void test() throws Exception

@@ -22,9 +22,9 @@ configurations {
 }
 
 dependencies {
-    compile     'org.embulk:embulk-core:0.5.0'
-    provided    'org.embulk:embulk-core:0.5.0'
-    testCompile 'org.embulk:embulk-standards:0.5.0'
+    compile     'org.embulk:embulk-core:0.6.5'
+    provided    'org.embulk:embulk-core:0.6.5'
+    testCompile 'org.embulk:embulk-standards:0.6.5'
     testCompile 'junit:junit:4.+'
 }
 
