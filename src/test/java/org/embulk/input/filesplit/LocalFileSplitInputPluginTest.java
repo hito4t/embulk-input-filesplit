@@ -16,33 +16,33 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class LocalFileSplitInputPluginTest {
-	
+
 	private EmbulkPluginTester tester = new EmbulkPluginTester(InputPlugin.class, "filesplit", LocalFileSplitInputPlugin.class);
-	
+
 	@Test
 	public void test() throws Exception
 	{
-		run("/yml/test.yml", "/data/test.csv");
+		run("/yml/test.yml", "/data/test-semicolon.csv");
 	}
-	
+
 	@Test
 	public void testTasks() throws Exception
 	{
-		run("/yml/test-tasks.yml", "/data/test.csv");
+		run("/yml/test-tasks.yml", "/data/test-semicolon.csv");
 	}
-	
+
 	@Test
 	public void testHeader() throws Exception
 	{
-		run("/yml/test-header.yml", "/data/test.csv");
+		run("/yml/test-header.yml", "/data/test-semicolon.csv");
 	}
-	
+
 	@Test
 	public void testOnlyHeader() throws Exception
 	{
 		run("/yml/test-only-header.yml", "/data/empty.csv");
 	}
-	
+
 	private void run(String ymlPath, String expectedName) throws Exception
 	{
 		List<String> expected = readAll(expectedName);
@@ -50,13 +50,13 @@ public class LocalFileSplitInputPluginTest {
 
 		File file = prepare();
 		tester.run(ymlPath);
-		
+
 		List<String> actual= readAll(file);
 		Collections.sort(actual);
-		
+
 		assertEquals(expected, actual);
 	}
-	
+
 	private File prepare() throws URISyntaxException
 	{
 		File file = new File(new File(getClass().getResource("/resource.txt").toURI()).getParentFile(), "temp");
@@ -66,20 +66,20 @@ public class LocalFileSplitInputPluginTest {
 		}
 		return file;
 	}
-	
+
 	private List<String> readAll(String name) throws IOException, URISyntaxException
 	{
 		return readAll(new File(getClass().getResource(name).toURI()));
 	}
-	
-	private List<String> readAll(File file) throws IOException 
+
+	private List<String> readAll(File file) throws IOException
 	{
 		if (file.isFile()) {
 			FileSystem fs = FileSystems.getDefault();
 			Charset charset = Charset.forName("UTF-8");
 			return Files.readAllLines(fs.getPath(file.getAbsolutePath()), charset);
 		}
-		
+
 		if (file.isDirectory()) {
 			List<String> lines = new ArrayList<String>();
 			for (File child : file.listFiles()) {
@@ -87,8 +87,8 @@ public class LocalFileSplitInputPluginTest {
 			}
 			return lines;
 		}
-		
+
 		return Collections.emptyList();
 	}
-	
+
 }
