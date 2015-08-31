@@ -11,13 +11,13 @@ import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.embulk.config.CommitReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigInject;
 import org.embulk.config.ConfigSource;
 import org.embulk.config.Task;
+import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Exec;
@@ -36,11 +36,11 @@ public class LocalFileSplitInputPlugin
     {
         @Config("path")
         public String getPath();
-        
+
         @Config("tasks")
         @ConfigDefault("null")
         public Optional<Integer> getTasks();
-        
+
         @Config("header_line")
         @ConfigDefault("false")
         public boolean getHeaderLine();
@@ -76,7 +76,7 @@ public class LocalFileSplitInputPlugin
                 files.add(new PartialFile(task.getPath(), start, end));
             }
         }
-        
+
         task.setFiles(files);
 
         return resume(task.dump(), task.getFiles().size(), control);
@@ -95,7 +95,7 @@ public class LocalFileSplitInputPlugin
     @Override
     public void cleanup(TaskSource taskSource,
             int taskCount,
-            List<CommitReport> successCommitReports)
+            List<TaskReport> successTaskReports)
     { }
 
     @Override
@@ -129,7 +129,7 @@ public class LocalFileSplitInputPlugin
                     return null;
                 }
                 opened = true;
-                
+
                 InputStream in = new PartialFileInputStream(new FileInputStream(file.getPath()), file.getStart(), file.getEnd());
                 if (file.getStart() > 0 && hasHeader) {
                     in = new SequenceInputStream(openHeader(file.getPath()), in);
@@ -139,7 +139,7 @@ public class LocalFileSplitInputPlugin
 
             @Override
             public void close() { }
-            
+
             private InputStream openHeader(String path) throws IOException
             {
                 ByteArrayOutputStream header = new ByteArrayOutputStream();
@@ -149,13 +149,13 @@ public class LocalFileSplitInputPlugin
                         if (c < 0) {
                             break;
                         }
-                        
+
                         header.write(c);
-                        
+
                         if (c == '\n') {
                             break;
                         }
-                        
+
                         if (c == '\r') {
                             int c2 = in.read();
                             if (c2 == '\n') {
@@ -179,9 +179,9 @@ public class LocalFileSplitInputPlugin
         public void abort() { }
 
         @Override
-        public CommitReport commit()
+        public TaskReport commit()
         {
-            return Exec.newCommitReport();
+            return Exec.newTaskReport();
         }
     }
 }
