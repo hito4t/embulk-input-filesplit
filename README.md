@@ -12,7 +12,8 @@ The plugin searches line separators and splits a file properly.
 
 ## Configuration
 
-- **path**: the path of a text file (string, required)
+- **path**: the path of a text file (string, either this or path_prefix is required)
+- **path_prefix**: the path prefix of text files (string,  either this or path_prefix is required)
 - **header_line**: whether the first line is a header or not (boolean, default: false)
 - **tasks**: number of tasks (integer, default: number of available processors * 2)
 

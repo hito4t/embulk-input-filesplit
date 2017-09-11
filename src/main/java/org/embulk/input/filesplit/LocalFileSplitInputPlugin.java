@@ -8,8 +8,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
+import java.nio.file.Files;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.FileVisitResult;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import com.google.common.collect.ImmutableList;
 
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -27,15 +37,22 @@ import org.embulk.spi.util.InputStreamFileInput;
 
 import com.google.common.base.Optional;
 
-
 public class LocalFileSplitInputPlugin
         implements FileInputPlugin
 {
+
+    private final static Path CURRENT_DIR = Paths.get(".").normalize();
+
     public interface PluginTask
             extends Task
     {
         @Config("path")
-        public String getPath();
+        @ConfigDefault("null")
+        public Optional<String> getPath();
+
+        @Config("path_prefix")
+        @ConfigDefault("null")
+        public Optional<String> getPathPrefix();
 
         @Config("tasks")
         @ConfigDefault("null")
@@ -67,13 +84,24 @@ public class LocalFileSplitInputPlugin
             tasks = Runtime.getRuntime().availableProcessors() * 2;
         }
 
-        long size = new File(task.getPath()).length();
+        List<String> paths = new ArrayList<String>();
+        if (task.getPath().isPresent()) {
+            paths.add(task.getPath().get());
+        } else if (task.getPathPrefix().isPresent()) {
+            paths.addAll(listFiles(task.getPathPrefix().get()));
+        } else {
+            throw new IllegalArgumentException("Specify either 'path' or 'path_prefix'");
+        }
+
         List<PartialFile> files = new ArrayList<PartialFile>();
-        for (int i = 0; i < tasks; i++) {
-            long start = size * i / tasks;
-            long end = size * (i + 1) / tasks;
-            if (start < end) {
-                files.add(new PartialFile(task.getPath(), start, end));
+        for (String path : paths) {
+            long size = new File(path).length();
+            for (int i = 0; i < tasks; i++) {
+                long start = size * i / tasks;
+                long end = size * (i + 1) / tasks;
+                if (start < end) {
+                    files.add(new PartialFile(path, start, end));
+                }
             }
         }
 
@@ -103,6 +131,88 @@ public class LocalFileSplitInputPlugin
     {
         PluginTask task = taskSource.loadTask(PluginTask.class);
         return new LocalFileSplitInput(task, taskIndex);
+    }
+
+    /**
+     * Most of this implementation is based on LocalFileInputPlugin hosted at:
+     *   https://github.com/embulk/embulk
+     *
+     */
+    public List<String> listFiles(String prefix)
+    {
+        final Path pathPrefix = Paths.get(prefix).normalize();
+        final Path directory;
+        final String fileNamePrefix;
+        if (Files.isDirectory(pathPrefix)) {
+            directory = pathPrefix;
+            fileNamePrefix = "";
+        } else {
+            fileNamePrefix = pathPrefix.getFileName().toString();
+            Path d = pathPrefix.getParent();
+            directory = (d == null ? CURRENT_DIR : d);
+        }
+
+        final ImmutableList.Builder<String> builder = ImmutableList.builder();
+        try {
+            int maxDepth = Integer.MAX_VALUE;
+            Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+
+            Files.walkFileTree(directory, opts, maxDepth, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs)
+                {
+                    if (path.equals(directory)) {
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        Path parent = path.getParent();
+                        if (parent == null) {
+                            parent = CURRENT_DIR;
+                        }
+                        if (parent.equals(directory)) {
+                            if (path.getFileName().toString().startsWith(fileNamePrefix)) {
+                                return FileVisitResult.CONTINUE;
+                            } else {
+                                return FileVisitResult.SKIP_SUBTREE;
+                            }
+                        } else {
+                            return FileVisitResult.CONTINUE;
+                        }
+                    }
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
+                {
+                    try {
+                        // Avoid directories from listing.
+                        // Directories are normally unvisited with |FileVisitor#visitFile|, but symbolic links to
+                        // directories are visited like files unless |FOLLOW_LINKS| is set in |Files#walkFileTree|.
+                        // Symbolic links to directories are explicitly skipped here by checking with |Path#toReadlPath|.
+                        if (Files.isDirectory(path.toRealPath())) {
+                            return FileVisitResult.CONTINUE;
+                        }
+                    } catch (IOException ex){
+                        throw new RuntimeException("Can't resolve symbolic link", ex);
+                    }
+                    Path parent = path.getParent();
+                    if (parent == null) {
+                        parent = CURRENT_DIR;
+                    }
+                    if (parent.equals(directory)) {
+                        if (path.getFileName().toString().startsWith(fileNamePrefix)) {
+                            builder.add(path.toString());
+                            return FileVisitResult.CONTINUE;
+                        }
+                    } else {
+                        builder.add(path.toString());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            throw new RuntimeException(String.format("Failed get a list of local files at '%s'", directory), ex);
+        }
+        return builder.build();
     }
 
     public static class LocalFileSplitInput
