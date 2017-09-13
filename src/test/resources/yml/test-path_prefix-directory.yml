@@ -1,0 +1,23 @@
+in:
+  type: filesplit
+  path_prefix: 'data/sub1'
+  parser:
+    charset: UTF-8
+    newline: CRLF
+    type: csv
+    delimiter: ','
+    quote: ''
+    columns:
+    - {name: id, type: long}
+    - {name: name, type: string}
+    - {name: value, type: long}
+out:
+  type: file
+  path_prefix: 'temp/result'
+  file_ext: .csv
+  formatter:
+    type: csv
+    delimiter: ','
+    header_line: false
+    charset: UTF-8
+    newline: CRLF

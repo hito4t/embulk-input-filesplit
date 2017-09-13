@@ -86,6 +86,9 @@ public class LocalFileSplitInputPlugin
 
         List<String> paths = new ArrayList<String>();
         if (task.getPath().isPresent()) {
+            if (task.getPathPrefix().isPresent()) {
+                throw new IllegalArgumentException("Cannot specify both 'path' and 'path_prefix'");
+            }
             paths.add(task.getPath().get());
         } else if (task.getPathPrefix().isPresent()) {
             paths.addAll(listFiles(task.getPathPrefix().get()));
@@ -138,7 +141,7 @@ public class LocalFileSplitInputPlugin
      *   https://github.com/embulk/embulk
      *
      */
-    public List<String> listFiles(String prefix)
+    private List<String> listFiles(String prefix)
     {
         final Path pathPrefix = Paths.get(prefix).normalize();
         final Path directory;
